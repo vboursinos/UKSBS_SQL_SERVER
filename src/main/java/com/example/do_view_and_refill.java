@@ -7,22 +7,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
+import io.github.cdimascio.dotenv.Dotenv;
+
 
 public class do_view_and_refill {
 
     public static void main(String[] args) {
         // Register the driver
+
+        Dotenv dotenv = Dotenv.load();
+
+        // Register the driver
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-            System.exit(1); // Exit with a non-zero status code to indicate failure
+            System.exit(1);
         }
 
-        // Database connection details
-        String url = "jdbc:sqlserver://35.189.89.97:1433;encrypt=false";
-        String user = "sa";
-        String password = "Contraseña12345678";
+        // Database connection details from environment variables
+        String url = dotenv.get("DB_URL");
+        String user = dotenv.get("DB_USER");
+        String password = dotenv.get("DB_PASSWORD");
 
         // Paths to the SQL files in the resources directory
         String sqlFilePath1 = "sql/USR_VW_PromptPaymentsReport_modified.sql";

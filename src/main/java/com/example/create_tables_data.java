@@ -1,5 +1,7 @@
 package com.example;
 
+import io.github.cdimascio.dotenv.Dotenv;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
@@ -11,55 +13,40 @@ import java.sql.SQLException;
 public class create_tables_data {
 
     public static void main(String[] args) {
+        // Load environment variables from .env file
+        Dotenv dotenv = Dotenv.load();
+
         // Register the driver
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
-            System.exit(1); // Exit with a non-zero status code to indicate failure
+            System.exit(1);
         }
 
-        // Database connection details
-        String url = "jdbc:sqlserver://35.189.89.97:1433;encrypt=false";
-        String user = "sa";
-        String password = "Contraseña12345678";
+        // Database connection details from environment variables
+        String url = dotenv.get("DB_URL");
+        String user = dotenv.get("DB_USER");
+        String password = dotenv.get("DB_PASSWORD");
 
         // Paths to the SQL files in the resources directory
         String sqlFilePath1 = "sql/USR_REP_PaymentsData_modified.sql";
         String sqlFilePath2 = "sql/dummydata2.sql";
         String sqlFilePath3 = "sql/USR_REP_PromptPaymentsReport_All_modified.sql";
 
-        // Execute the first SQL script
+        // Execute SQL scripts with waits
         if (!executeSQLScript(url, user, password, sqlFilePath1)) {
-            System.exit(1); // Exit if execution fails
+            System.exit(1);
         }
+        waitOneSecond();
 
-        // Wait for 1 second
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            System.err.println("Thread was interrupted during sleep.");
-            e.printStackTrace();
-            System.exit(1); // Exit with a non-zero status code to indicate failure
-        }
-
-        // Execute the second SQL script
         if (!executeSQLScript(url, user, password, sqlFilePath2)) {
-            System.exit(1); // Exit if execution fails
+            System.exit(1);
         }
+        waitOneSecond();
 
-        // Wait for 1 second
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            System.err.println("Thread was interrupted during sleep.");
-            e.printStackTrace();
-            System.exit(1); // Exit with a non-zero status code to indicate failure
-        }
-
-        // Execute the third SQL script
         if (!executeSQLScript(url, user, password, sqlFilePath3)) {
-            System.exit(1); // Exit if execution fails
+            System.exit(1);
         }
     }
 
@@ -69,13 +56,11 @@ public class create_tables_data {
                 throw new IOException("SQL file not found: " + sqlFilePath);
             }
 
-            // Read the SQL file content
             String sqlScript = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
 
             try (Connection connection = DriverManager.getConnection(url, user, password);
                  Statement statement = connection.createStatement()) {
 
-                // Split the script by "GO" and execute each part
                 String[] sqlStatements = sqlScript.split("(?i)GO");
                 for (String sql : sqlStatements) {
                     if (!sql.trim().isEmpty()) {
@@ -96,6 +81,16 @@ public class create_tables_data {
             System.err.println("Error reading the SQL file: " + sqlFilePath);
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private static void waitOneSecond() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            System.err.println("Thread was interrupted during sleep.");
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 }

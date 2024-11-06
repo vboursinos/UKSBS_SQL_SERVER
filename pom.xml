@@ -18,6 +18,11 @@
             <artifactId>mssql-jdbc</artifactId>
             <version>11.2.0.jre17</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>java-dotenv</artifactId>
+            <version>5.2.2</version>
+        </dependency>
     </dependencies>
 
     <build>
